@@ -1,3 +1,4 @@
+using MoreMountains.Feedbacks;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,15 +9,33 @@ public class GameManager : MonoBehaviour
         Instance = this;
     }
 
+    [Header("References")]
     [SerializeField] private UIBar healthBar;
     [SerializeField] private UIBar xpBar;
 
-    private void Start()
-    {
-        healthBar.SetMaxValue(1000f);
-        healthBar.SetValue(1000f);
+    [Header("Feedbacks")]
+    [SerializeField] private MMF_Player onGameStart;
+    [SerializeField] private MMF_Player onGameStop;
 
-        xpBar.SetMaxValue(1000f);
-        xpBar.SetValue(0f);
+    public void StartGame()
+    {
+        healthBar.Init(1000f);
+        xpBar.Init(0f, 1000f);
+
+        CursorScript.Instance.Enable();
+        GeometryManager.Instance.StartSpawning();
+
+        onGameStart.PlayFeedbacks();
+    }
+
+    public void StopGame()
+    {
+        healthBar.Uninit();
+        xpBar.Uninit();
+
+        CursorScript.Instance.Disable();
+        GeometryManager.Instance.StopSpawning();
+
+        onGameStop.PlayFeedbacks();
     }
 }

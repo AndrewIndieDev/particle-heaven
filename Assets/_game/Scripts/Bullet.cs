@@ -30,8 +30,7 @@ public class Bullet : MonoBehaviour
     {
         if (collision.gameObject.tag == "Geometry")
         {
-            collision.gameObject.GetComponent<GeometryObject>().OnHit(400f);
-            UIBar.GetByName("health")?.RemoveValue(1f);
+            collision.gameObject.GetComponent<GeometryObject>().OnHit(300f); // Need to add a player stats SO so we can keep track of damage.
         }
     }
 }

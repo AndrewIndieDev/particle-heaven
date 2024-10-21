@@ -1,8 +1,9 @@
+using AndrewDowsett.CommonObservers;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class GeometryManager : MonoBehaviour
+public class GeometryManager : MonoBehaviour, IUpdateObserver
 {
     public static GeometryManager Instance;
     private void Awake() => Instance = this;
@@ -11,21 +12,31 @@ public class GeometryManager : MonoBehaviour
     [SerializeField] private Transform parent;
 
     private List<GeometryObject> Objects = new();
-    private List<GeometryData> Data = new();
 
     private float spawnTimer;
 
-    private void Update()
+    public void StartSpawning()
     {
-        spawnTimer += Time.deltaTime;
+        UpdateManager.RegisterObserver(this);
+        StartCoroutine(DespawnGeometry());
+    }
+
+    public void StopSpawning()
+    {
+        UpdateManager.UnregisterObserver(this);
+    }
+
+    public void ObservedUpdate(float deltaTime)
+    {
+        spawnTimer += deltaTime;
         if (spawnTimer >= 1f)
         {
-            StartCoroutine(spawnGeometry(Random.Range(1, 6)));
+            StartCoroutine(SpawnGeometry(Random.Range(1, 6)));
             spawnTimer = 0f;
         }
     }
 
-    IEnumerator spawnGeometry(int amount)
+    IEnumerator SpawnGeometry(int amount)
     {
         for (int i = 0; i < amount; i++)
         {
@@ -34,30 +45,24 @@ public class GeometryManager : MonoBehaviour
         }
     }
 
+    IEnumerator DespawnGeometry()
+    {
+        while (Objects.Count > 0)
+        {
+            if (Objects[0] != null)
+                Objects[0].DestroyGO();
+            yield return null;
+        }
+        Objects.Clear();
+    }
+
     public void AddObject(GeometryObject obj)
     {
         Objects.Add(obj);
-        Data.Add(new GeometryData());
     }
 
-    public void RemoveObject(int index)
+    public void RemoveObject(GeometryObject geoObject)
     {
-        Destroy(Objects[index].gameObject);
-        Objects.RemoveAt(index);
-        Data.RemoveAt(index);
+        Objects.Remove(geoObject);
     }
-}
-
-public struct GeometryData
-{
-    public GeometryData(Vector2 position, Vector2 direction, float size)
-    {
-        Position = position;
-        Direction = direction;
-        Size = size;
-    }
-
-    public Vector2 Position;
-    public Vector2 Direction;
-    public float Size;
 }

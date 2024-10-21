@@ -22,10 +22,10 @@ public class GeometryObject : MonoBehaviour, IUpdateObserver
         SetRandomRotation();
         SetDirection();
 
-        healthBar.SetMaxValue(Size.x * 50f);
-        healthBar.SetValue(Size.x * 50f);
+        healthBar.Init(Size.x * 50f);
 
         GeometryManager.Instance.AddObject(this);
+        UpdateManager.RegisterObserver(this);
     }
 
     public void ObservedUpdate(float deltaTime)
@@ -36,6 +36,7 @@ public class GeometryObject : MonoBehaviour, IUpdateObserver
     public void OnHit(float damage)
     {
         onHitFeedbacks.PlayFeedbacks();
+        UIBar.GetByName("health")?.RemoveValue(Size.x); // need to times this by the current "level" to make them stronger as you go higher.
         healthBar.RemoveValue(damage);
         if (healthBar.Value <= 0)
             DestroyWithPoints();
@@ -103,11 +104,18 @@ public class GeometryObject : MonoBehaviour, IUpdateObserver
     {
         UIBar.GetByName("xp")?.AddValue(Size.x * 2f);
         UIBar.GetByName("health")?.AddValue(Size.x * 0.5f);
-        GeometryManager.Instance.RemoveObject(transform.GetSiblingIndex());
+        DestroyGO();
     }
 
     private void DestroyWithoutPoints()
     {
-        GeometryManager.Instance.RemoveObject(transform.GetSiblingIndex());
+        DestroyGO();
+    }
+
+    public void DestroyGO()
+    {
+        UpdateManager.UnregisterObserver(this);
+        GeometryManager.Instance.RemoveObject(this);
+        Destroy(gameObject);
     }
 }

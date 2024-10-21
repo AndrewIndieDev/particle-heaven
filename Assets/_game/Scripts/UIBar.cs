@@ -1,7 +1,9 @@
+using AndrewDowsett.CommonObservers;
 using AndrewDowsett.Utility;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
 
 public enum UIBarType
@@ -10,7 +12,7 @@ public enum UIBarType
     PERCENT
 }
 
-public class UIBar : MonoBehaviour
+public class UIBar : MonoBehaviour, IUpdateObserver
 {
     public static List<UIBar> UIBars = new();
     private void Awake()
@@ -33,6 +35,9 @@ public class UIBar : MonoBehaviour
     [SerializeField] private Image _fill;
     [SerializeField] private TMP_Text _valueText;
 
+    [Header("Callback Actions")]
+    [SerializeField] private UnityEvent eventTrigger;
+
     public float Value => _value;
     private float _value;
 
@@ -40,22 +45,47 @@ public class UIBar : MonoBehaviour
     private float _maxValue;
 
     public float Percent => _value / _maxValue;
-    public void SetValue(float value) => _value = Mathf.Clamp(value, 0, _maxValue);
-    public void SetMaxValue(float value) => _maxValue = value;
+    private void SetValue(float value) => _value = Mathf.Clamp(value, 0, _maxValue);
+    private void SetMaxValue(float value) => _maxValue = value;
     public void RemoveValue(float value) => _value = Mathf.Clamp(_value - value, 0, _maxValue);
     public void AddValue(float value) => _value = Mathf.Clamp(_value + value, 0, _maxValue);
 
-    private void Start()
+    public void Init(float value, float maxValue = -1)
     {
         if (_nameText != null)
             _nameText.text = _name;
+
+        SetMaxValue(maxValue < 0 ? value : maxValue);
+        SetValue(value);
+
+        UpdateManager.RegisterObserver(this);
     }
 
-    private void Update()
+    public void Uninit()
+    {
+        UpdateManager.UnregisterObserver(this);
+    }
+
+    public void ObservedUpdate(float deltaTime)
     {
         if (_fill != null)
             _fill.fillAmount = Percent;
         if (_valueText != null)
-            _valueText.text = _type == UIBarType.NUMBER ? $"{_value} / {_maxValue}" : $"{(Percent * 100).ToString("N1")}%";
+            _valueText.text = _type == UIBarType.NUMBER ? $"{_value.ToString("N0")} / {_maxValue}" : $"{(Percent * 100).ToString("N1")}%";
+
+        switch (Type)
+        {
+            case UIBarType.NUMBER:
+                if (_value <= 0)
+                    eventTrigger?.Invoke();
+                break;
+            case UIBarType.PERCENT:
+                if (Percent >= 1)
+                    eventTrigger?.Invoke();
+                break;
+            default:
+                Debug.LogError($"<{gameObject.name}> : Unknown type {Type}");
+                break;
+        }
     }
 }
