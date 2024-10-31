@@ -1,4 +1,5 @@
 using MoreMountains.Feedbacks;
+using System;
 using UnityEngine;
 
 public class GameManager : MonoBehaviour
@@ -8,6 +9,9 @@ public class GameManager : MonoBehaviour
     {
         Instance = this;
     }
+
+    [Header("Currency System")]
+    public double Currency;
 
     [Header("References")]
     [SerializeField] private UIBar healthBar;
@@ -37,5 +41,15 @@ public class GameManager : MonoBehaviour
         GeometryManager.Instance.StopSpawning();
 
         onGameStop.PlayFeedbacks();
+    }
+
+    public bool BuyUpgrade(double amount)
+    {
+        if (amount <= Currency)
+        {
+            Currency -= amount;
+            return true;
+        }
+        return false;
     }
 }
