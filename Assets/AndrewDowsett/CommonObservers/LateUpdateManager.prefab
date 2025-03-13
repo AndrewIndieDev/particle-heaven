@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 723903734747405571}
   - component: {fileID: 6093590953934007534}
+  - component: {fileID: 3791358479082966639}
   m_Layer: 0
   m_Name: LateUpdateManager
   m_TagString: Untagged
@@ -42,5 +43,17 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 95ae19fea13ab5a4da6c2daea0197572, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &3791358479082966639
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 36478992818518270}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6bf223268f545c5469650faeded6f007, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 

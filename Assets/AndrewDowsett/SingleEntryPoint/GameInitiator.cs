@@ -1,42 +1,48 @@
 using AndrewDowsett.CommonObservers;
 using AndrewDowsett.IDisposables;
+using AndrewDowsett.ObjectPooling;
 using AndrewDowsett.SceneLoading;
+using AndrewDowsett.TimeManagement;
+using AndrewDowsett.Utility;
 using Cysharp.Threading.Tasks;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 
 namespace AndrewDowsett.SingleEntryPoint
 {
     public class GameInitiator : MonoBehaviour
     {
+        [Header("Initiator Settings")]
+        public EProgressBarType loadingBarType;
+
         [Header("Scene Post Initiation")]
         public string SceneToLoad;
 
         [Header("Prefabs to Instantiate")]
+        // All of these can be deleted if you don't need them.
+        // You can add as many as you want to add here.
+        // Remember to also add or remove them in the BindObjects method.
         public EntryScreen _entryScreen;
         public Camera _camera;
         public UpdateManager _updateManager;
         public FixedUpdateManager _fixedUpdateManager;
         public LateUpdateManager _lateUpdateManager;
+        public TickSystem _tickSystem;
         public SceneLoader _sceneLoader;
         public IntroAnimation _introAnimation;
+        public ObjectPool[] _objectPools;
 
         private async void Start()
         {
             BindObjects();
 
-            // we can use an IDisposable here to simplify showing and hiding the loading screen:
-            using (var loadingSceneDisposable = new DisposableShowEntryScreen(_entryScreen))
+            // We can use an IDisposable here to simplify showing and hiding the loading screen:
+            using (var loadingSceneDisposable = new DisposableShowEntryScreen(_entryScreen, loadingBarType))
             {
-                loadingSceneDisposable.SetLoadingText("Initializing...");
-                loadingSceneDisposable.SetLoadingBarPercent(0.01f);
-                await InitializeObjects();
-                loadingSceneDisposable.SetLoadingText("Creating Objects...");
-                loadingSceneDisposable.SetLoadingBarPercent(0.2f);
-                await CreateObjects();
-                loadingSceneDisposable.SetLoadingText("Preparing Game...");
-                loadingSceneDisposable.SetLoadingBarPercent(0.7f);
-                await PrepareGame();
+                await InitializeObjects(loadingSceneDisposable, 0.1f);
+                await CreateObjects(loadingSceneDisposable, 0.5f);
+                await PrepareGame(loadingSceneDisposable, 0.1f);
+                await LoadStartingScenes(loadingSceneDisposable, 0.3f);
+
                 loadingSceneDisposable.SetLoadingText("Done...");
                 loadingSceneDisposable.SetLoadingBarPercent(1.00f);
             }
@@ -48,56 +54,100 @@ namespace AndrewDowsett.SingleEntryPoint
         {
             // Bind all objects
             _entryScreen = Instantiate(_entryScreen);
-            _entryScreen.name = "EntryScreen";
+            _entryScreen.name.RemoveCloneInName();
 
             _camera = Instantiate(_camera);
-            _camera.name = "MainCamera";
+            _camera.name.RemoveCloneInName();
 
             _updateManager = Instantiate(_updateManager);
-            _updateManager.name = "UpdateManager";
+            _updateManager.name.RemoveCloneInName();
 
             _fixedUpdateManager = Instantiate(_fixedUpdateManager);
-            _fixedUpdateManager.name = "FixedUpdateManager";
+            _fixedUpdateManager.name.RemoveCloneInName();
 
             _lateUpdateManager = Instantiate(_lateUpdateManager);
-            _lateUpdateManager.name = "LateUpdateManager";
+            _lateUpdateManager.name.RemoveCloneInName();
+
+            _tickSystem = Instantiate(_tickSystem);
+            _tickSystem.name.RemoveCloneInName();
 
             _sceneLoader = Instantiate(_sceneLoader);
-            _sceneLoader.name = "SceneLoader";
+            _sceneLoader.name.RemoveCloneInName();
 
             _introAnimation = Instantiate(_introAnimation);
-            _introAnimation.name = "IntroAnimation";
+            _introAnimation.name.RemoveCloneInName();
+
+            for (int i = 0; i < _objectPools.Length; i++)
+            {
+                _objectPools[i] = Instantiate(_objectPools[i]);
+                _objectPools[i].name.RemoveCloneInName();
+            }
         }
 
-        private async UniTask InitializeObjects()
+        private async UniTask InitializeObjects(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
         {
             // Perform initialization for analytics/steam etc.
-            await UniTask.Delay(1000);
+            loadingSceneDisposable.SetLoadingText("Initializing...");
+
+            _tickSystem.Initialize();
+            _sceneLoader.Initialize();
+            for (int i = 0; i < _objectPools.Length; i++)
+            {
+                _objectPools[i].Initialize();
+            }
+
+            await UniTask.Delay(500);
+            loadingSceneDisposable.SetLoadingText("Finished Initializing...");
+            loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
+            await UniTask.Delay(500);
         }
 
-        private async UniTask CreateObjects()
+        private async UniTask CreateObjects(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
         {
             // Instantiate all objects into the scene
-            await UniTask.Delay(1000);
+            float initialPercent = loadingSceneDisposable.GetLoadingBarPercent();
+            float percentPerPool = percentageToUse / _objectPools.Length;
+            for (int i = 0; i < _objectPools.Length; i++)
+            {
+                loadingSceneDisposable.SetLoadingText("Creating " + _objectPools[i].name + "...");
+                await _objectPools[i].SpawnDefaultPool(loadingSceneDisposable, percentPerPool);
+            }
+            loadingSceneDisposable.SetLoadingBarPercent(initialPercent + percentageToUse);
+            loadingSceneDisposable.SetLoadingText("Finished Pooling Objects...");
+
+            await UniTask.Delay(500);
         }
 
-        private async UniTask PrepareGame()
+        private async UniTask PrepareGame(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
         {
             // Prepare objects in the scene, if they need methods called before the game starts
+            loadingSceneDisposable.SetLoadingText("Preparing Game...");
             await UniTask.Delay(1000);
+            loadingSceneDisposable.SetLoadingText("Finished Preparing Game...");
+            loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
+            await UniTask.Delay(500);
+        }
+
+        private async UniTask LoadStartingScenes(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
+        {
+            loadingSceneDisposable.SetLoadingText("Loading Scene...");
+            // Load the main menu scene
+            _sceneLoader.LoadScene(SceneToLoad);
+            // Wait for the scenes to finish loading
+            await UniTask.WaitUntil(() => !_sceneLoader.CurrentlyLoadingScene);
+            loadingSceneDisposable.SetLoadingText("Finished Loading Scene...");
+            loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
+            await UniTask.Delay(500);
         }
 
         private async UniTask BeginGame()
         {
-            // Load the main menu scene
-            _sceneLoader.LoadScene(SceneToLoad);
-            // Unload the entry scene
-            _sceneLoader.UnloadScene(SceneManager.GetActiveScene().name);
             // Wait for the intro animation
+            // Suggestion: Back a black background in the animation so the player can't see the scene's laoding in.
             await _introAnimation.Play();
-            // Wait for the scenes to finish loading if not done before the animation finishes
-            await UniTask.WaitUntil(() => !_sceneLoader.CurrentlyLoadingScene);
-            Debug.Log("Game has been loaded...");
+
+            // Unload the entry scene
+            _sceneLoader.UnloadScene(gameObject.scene.name);
         }
     }
 }

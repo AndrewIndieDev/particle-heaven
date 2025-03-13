@@ -15,10 +15,9 @@ namespace AndrewDowsett.TimeManagement
         private int _currentTick;
         private float _deltaTime;
 
-        private void Start()
+        public void Initialize()
         {
             CurrentTick = 0;
-
             UpdateManager.RegisterObserver(this);
         }
 

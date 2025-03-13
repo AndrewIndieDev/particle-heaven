@@ -1,19 +1,20 @@
 using AndrewDowsett.CommonObservers;
-using TMPro;
+using AndrewDowsett.Utility;
 using UnityEngine;
-using UnityEngine.UI;
 
 namespace AndrewDowsett.SingleEntryPoint
 {
     public class EntryScreen : MonoBehaviour, IUpdateObserver
     {
-        public Image progressBar;
-        public TMP_Text progressText;
+        public SerializableDictionary<EProgressBarType, ProgressBar> ProgressBar;
 
         private float _progress = 0;
+        private ProgressBar barToUse;
 
-        public void Show()
+        public void Show(EProgressBarType eProgressBarType)
         {
+            barToUse = ProgressBar[eProgressBarType];
+            barToUse.gameObject.SetActive(true);
             UpdateManager.RegisterObserver(this);
             gameObject.SetActive(true);
         }
@@ -22,8 +23,14 @@ namespace AndrewDowsett.SingleEntryPoint
         {
             UpdateManager.UnregisterObserver(this);
             gameObject.SetActive(false);
-            progressBar.fillAmount = 0;
-            progressText.text = string.Empty;
+            barToUse.progress.fillAmount = 0;
+            barToUse.text.text = string.Empty;
+            barToUse.gameObject.SetActive(false);
+        }
+
+        public float GetBarPercent()
+        {
+            return _progress;
         }
 
         public void SetBarPercent(float percent)
@@ -33,19 +40,19 @@ namespace AndrewDowsett.SingleEntryPoint
 
         public void SetBarText(string text)
         {
-            progressText.text = text;
+            barToUse.text.text = text;
         }
 
         public void ObservedUpdate(float deltaTime)
         {
-            if (_progress > progressBar.fillAmount)
+            if (_progress > barToUse.progress.fillAmount)
             {
-                progressBar.fillAmount += 10f * deltaTime;
+                barToUse.progress.fillAmount += deltaTime;
             }
 
-            if (_progress < progressBar.fillAmount)
+            if (_progress < barToUse.progress.fillAmount)
             {
-                progressBar.fillAmount = _progress;
+                barToUse.progress.fillAmount = _progress;
             }
         }
     }

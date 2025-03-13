@@ -18,16 +18,9 @@ namespace AndrewDowsett.SceneLoading
         private List<Action<string>> asyncOperationQueue = new();
         private List<string> asyncOperationSceneNameQueue = new();
 
-        private void Awake()
+        public void Initialize()
         {
-            if (Instance != null)
-            {
-                Debug.LogError("Multiple SceneLoader instances detected. Destroying the new one. . .");
-                Destroy(gameObject);
-                return;
-            }
             Instance = this;
-            DontDestroyOnLoad(gameObject);
         }
 
         public void LoadScene(string sceneName)

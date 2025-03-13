@@ -7,10 +7,15 @@ namespace AndrewDowsett.IDisposables
     {
         private readonly EntryScreen _loadingScreen;
 
-        public DisposableShowEntryScreen(EntryScreen loadingScreen)
+        public DisposableShowEntryScreen(EntryScreen loadingScreen, EProgressBarType type = EProgressBarType.Bar_Left_To_Right)
         {
             _loadingScreen = loadingScreen;
-            _loadingScreen.Show();
+            _loadingScreen.Show(type);
+        }
+
+        public float GetLoadingBarPercent()
+        {
+            return _loadingScreen.GetBarPercent();
         }
 
         public void SetLoadingBarPercent(float percent)

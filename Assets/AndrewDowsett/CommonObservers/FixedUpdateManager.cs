@@ -9,11 +9,6 @@ namespace AndrewDowsett.CommonObservers
         private static List<IFixedUpdateObserver> _pendingObservers = new();
         private static int _currentIndex;
 
-        private void Start()
-        {
-            DontDestroyOnLoad(gameObject);
-        }
-
         private void Update()
         {
             for (_currentIndex = _observers.Count - 1; _currentIndex >= 0; _currentIndex--)

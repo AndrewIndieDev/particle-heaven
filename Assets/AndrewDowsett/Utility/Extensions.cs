@@ -6,7 +6,6 @@ using System.Text;
 using System.Text.RegularExpressions;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Rendering;
 using UnityEngine.UI;
 
 namespace AndrewDowsett.Utility
@@ -205,6 +204,11 @@ namespace AndrewDowsett.Utility
             float[] floatArray = new float[array.Length / sizeof(float)];
             Buffer.BlockCopy(array, 0, floatArray, 0, array.Length);
             return floatArray;
+        }
+
+        public static void RemoveCloneInName(this string input)
+        {
+            input = input.Replace("(Clone)", "");
         }
 
         public static string SanitizeAuthenticationString(this string input)
@@ -514,9 +518,15 @@ namespace AndrewDowsett.Utility
             dictionary.Add(key, value);
         }
 
-        public static float DistanceSquared(this Vector3 vectorA, Vector3 vectorB)
-        {
-            return (vectorB - vectorA).sqrMagnitude;
-        }
+        public static float DistanceSquared(this Vector3 vectorA, Vector3 vectorB) => (vectorB - vectorA).sqrMagnitude;
+
+        // Remove unwanted decimals from a float, return default if failed
+        public static float ToDecimals(this float value, int decimals) => (float)Math.Round(value, decimals);
+
+        // Parse a float, return default if failed
+        public static float ParseToFloat(this string toParse, int decimals, float _default) => (float.TryParse(toParse, out float f) ? f : _default).ToDecimals(decimals);
+
+        // Parse a int, return default if failed
+        public static int ParseToInt(this string toParse, int _default) => int.TryParse(toParse, out int f) ? f : _default;
     }
 }
