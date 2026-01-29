@@ -2,7 +2,7 @@ namespace AndrewDowsett.ObjectPooling
 {
     public interface IPooledObject
     {
-        public void Spawn();
+        public void Spawn(ObjectPool pool);
         public void Despawn();
     }
 }

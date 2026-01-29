@@ -12,6 +12,11 @@ namespace AndrewDowsett.Utility
             UpdateManager.RegisterObserver(this);
         }
 
+        private void OnDestroy()
+        {
+            UpdateManager.UnregisterObserver(this);
+        }
+
         public void ObservedUpdate(float deltaTime)
         {
             seconds -= deltaTime;

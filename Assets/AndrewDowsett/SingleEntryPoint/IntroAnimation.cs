@@ -8,7 +8,7 @@ namespace AndrewDowsett.SingleEntryPoint
         public async UniTask Play()
         {
             // await an animation, or Feel Feedbacks.
-            await UniTask.Delay(3000);
+            await UniTask.Delay(10);
         }
     }
 }

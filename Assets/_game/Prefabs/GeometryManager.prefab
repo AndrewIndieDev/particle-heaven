@@ -45,4 +45,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _prefab: {fileID: 2363829108078864104, guid: 497cbafe9bb20074b8c0f4487f5ade19, type: 3}
-  parent: {fileID: 0}
+  _parent: {fileID: 0}
+  spawnRate: 1
+  minMaxSpawns: {x: 1, y: 2}

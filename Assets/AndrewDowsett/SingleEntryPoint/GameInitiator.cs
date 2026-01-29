@@ -96,10 +96,10 @@ namespace AndrewDowsett.SingleEntryPoint
                 _objectPools[i].Initialize();
             }
 
-            await UniTask.Delay(500);
+            await UniTask.Delay(10);
             loadingSceneDisposable.SetLoadingText("Finished Initializing...");
             loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
-            await UniTask.Delay(500);
+            await UniTask.Delay(10);
         }
 
         private async UniTask CreateObjects(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
@@ -115,17 +115,17 @@ namespace AndrewDowsett.SingleEntryPoint
             loadingSceneDisposable.SetLoadingBarPercent(initialPercent + percentageToUse);
             loadingSceneDisposable.SetLoadingText("Finished Pooling Objects...");
 
-            await UniTask.Delay(500);
+            await UniTask.Delay(10);
         }
 
         private async UniTask PrepareGame(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
         {
             // Prepare objects in the scene, if they need methods called before the game starts
             loadingSceneDisposable.SetLoadingText("Preparing Game...");
-            await UniTask.Delay(1000);
+            await UniTask.Delay(10);
             loadingSceneDisposable.SetLoadingText("Finished Preparing Game...");
             loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
-            await UniTask.Delay(500);
+            await UniTask.Delay(10);
         }
 
         private async UniTask LoadStartingScenes(DisposableShowEntryScreen loadingSceneDisposable, float percentageToUse)
@@ -133,11 +133,12 @@ namespace AndrewDowsett.SingleEntryPoint
             loadingSceneDisposable.SetLoadingText("Loading Scene...");
             // Load the main menu scene
             _sceneLoader.LoadScene(SceneToLoad);
+            Destroy(_camera.gameObject);
             // Wait for the scenes to finish loading
             await UniTask.WaitUntil(() => !_sceneLoader.CurrentlyLoadingScene);
             loadingSceneDisposable.SetLoadingText("Finished Loading Scene...");
             loadingSceneDisposable.SetLoadingBarPercent(loadingSceneDisposable.GetLoadingBarPercent() + percentageToUse);
-            await UniTask.Delay(500);
+            await UniTask.Delay(10);
         }
 
         private async UniTask BeginGame()
